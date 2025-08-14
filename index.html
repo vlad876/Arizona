@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Сервера Arizona</title>
+    <style>
+        body { background: #2c3e50; color: #ecf0f1; font-family: Arial; }
+        .server { padding: 10px; border-bottom: 1px solid #34495e; }
+        .online { color: #2ecc71; }
+        .offline { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <h1>Список серверов Arizona</h1>
+    <div id="servers"></div>
+
+    <script>
+        async function loadServers() {
+            try {
+                const response = await fetch('/ping');
+                
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+
+                const servers = await response.json();
+                
+                // Сортируем сервера по номеру (от 1 до 32)
+                servers.sort((a, b) => a.number - b.number);
+                
+                const container = document.getElementById('servers');
+                container.innerHTML = servers.map(server => `
+                    <div class="server">
+                        <span class="${server.online > 0 ? 'online' : 'offline'}">⬤</span>
+                        ${server.number}. ${server.name} (${server.online}/${server.maxplayers})
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                document.getElementById('servers').innerHTML = `
+                    <div style="color: #e74c3c;">Ошибка: ${error.message}</div>
+                `;
+            }
+        }
+
+        // Загружаем сразу и каждые 30 секунд
+        loadServers();
+        setInterval(loadServers, 30000);
+    </script>
+</body>
+</html>
